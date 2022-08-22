@@ -1,1 +1,1 @@
-exports.refEq = a => b => a === b;
+export const refEq = a => b => a === b;

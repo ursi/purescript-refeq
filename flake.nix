@@ -1,12 +1,17 @@
 { inputs =
     { nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-      purs-nix.url = "github:ursi/purs-nix";
-      utils.url = "github:ursi/flake-utils/1";
+      make-shell.url = "github:ursi/nix-make-shell/1";
+      ps-tools.follows = "purs-nix/ps-tools";
+      purs-nix.url = "github:ursi/purs-nix/ps-0.15";
+      utils.url = "github:ursi/flake-utils/8";
     };
 
-  outputs = { nixpkgs, utils, ... }@inputs:
-    utils.default-systems
-      ({ make-shell, purs-nix, pkgs, ... }:
+  outputs = { utils, ... }@inputs:
+    utils.apply-systems
+      { inherit inputs;
+        systems = [ "x86_64-linux" "x86_64-darwin" ];
+      }
+      ({ make-shell, ps-tools, purs-nix, pkgs, ... }:
          let
            inherit (purs-nix) ps-pkgs ps-pkgs-ns purs;
            package = import ./package.nix purs-nix;
@@ -20,7 +25,7 @@
                       ps-pkgs-ns.ursi.prelude
                     ];
 
-                  src = ./src;
+                  dir = ./.;
                 }
              )
              command;
@@ -32,12 +37,11 @@
                    [ nodejs
                      nodePackages.bower
                      nodePackages.pulp
-                     nodePackages.purescript-language-server
+                     ps-tools.for-0_15.purescript-language-server
                      purs-nix.purescript
                      (command {})
                    ];
                };
          }
-      )
-      { inherit inputs nixpkgs; };
+      );
 }
